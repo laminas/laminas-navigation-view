@@ -1,0 +1,54 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Laminas\Navigation\View;
+
+use Laminas\Navigation\View\Helper\Navigation as NavigationHelper;
+use Laminas\ServiceManager\FactoryInterface;
+use Laminas\ServiceManager\ServiceLocatorInterface;
+use Psr\Container\ContainerInterface;
+use ReflectionProperty;
+
+final class NavigationHelperFactory implements FactoryInterface
+{
+    /**
+     * Create and return a navigation helper instance. (v3)
+     *
+     * @param string $requestedName
+     * @param null|array $options
+     * @return NavigationHelper
+     */
+    public function __invoke(ContainerInterface $container, $requestedName, ?array $options = null)
+    {
+        $helper = new NavigationHelper();
+        $helper->setServiceLocator($this->getApplicationServicesFromContainer($container));
+        return $helper;
+    }
+
+    /**
+     * Create and return a navigation helper instance. (v2)
+     *
+     * @param null|string $name
+     * @param string $requestedName
+     * @return NavigationHelper
+     */
+    public function createService(
+        ServiceLocatorInterface $container,
+        $name = null,
+        $requestedName = NavigationHelper::class
+    ) {
+        return $this($container, $requestedName);
+    }
+
+    /**
+     * Retrieve the application (parent) services from the container, if possible.
+     *
+     * @return ContainerInterface
+     */
+    private function getApplicationServicesFromContainer(ContainerInterface $container)
+    {
+        $r = new ReflectionProperty($container, 'creationContext');
+        return $r->getValue($container) ?: $container;
+    }
+}
